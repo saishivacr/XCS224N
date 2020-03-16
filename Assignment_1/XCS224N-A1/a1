@@ -1,0 +1,254 @@
+{
+ "nbformat": 4,
+ "nbformat_minor": 2,
+ "metadata": {
+  "language_info": {
+   "name": "python",
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "version": "3.7.4-final"
+  },
+  "orig_nbformat": 2,
+  "file_extension": ".py",
+  "mimetype": "text/x-python",
+  "name": "python",
+  "npconvert_exporter": "python",
+  "pygments_lexer": "ipython3",
+  "version": 3,
+  "kernelspec": {
+   "name": "python37464bitxcs224nvenvc3830852de054796a1ac976dcd799bb1",
+   "display_name": "Python 3.7.4 64-bit ('xcs224n': venv)"
+  }
+ },
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "#!/usr/bin/env python\n",
+    "\n",
+    "import sys\n",
+    "import os\n",
+    "import numpy as np\n",
+    "import scipy as sp\n",
+    "from sklearn.decomposition import TruncatedSVD\n",
+    "from sklearn.decomposition import PCA\n",
+    "\n",
+    "sys.path.append(os.path.abspath(os.path.join('..')))"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 34,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def distinctWords(corpus):\n",
+    "    \"\"\" Determine a list of distinct words for the corpus.\n",
+    "        Params:\n",
+    "            corpus (list of list of strings): corpus of documents\n",
+    "        Return:\n",
+    "            corpus_words (list of strings): list of distinct words across the corpus, sorted (using python 'sorted' function)\n",
+    "            num_corpus_words (integer): number of distinct words across the corpus\n",
+    "    \"\"\"\n",
+    "    corpus_words = []\n",
+    "    num_corpus_words = -1\n",
+    "\n",
+    "    ### SOLUTION BEGIN\n",
+    "    \n",
+    "    tokens = [token for doc in corpus for token in doc.split()]\n",
+    "    corpus_words = sorted(set(tokens))\n",
+    "    num_corpus_words = len(corpus_words)\n",
+    "\n",
+    "    ### SOLUTION END\n",
+    "\n",
+    "    return corpus_words, num_corpus_words\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 15,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "toy_corpus = [\"START All that glitters isn't gold END\", \"START All's well that ends well END\"]"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 35,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": "(['All',\n  \"All's\",\n  'END',\n  'START',\n  'ends',\n  'glitters',\n  'gold',\n  \"isn't\",\n  'that',\n  'well'],\n 10)"
+     },
+     "execution_count": 35,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "distinctWords(toy_corpus)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 179,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def computeCoOccurrenceMatrix(corpus, window_size=4):\n",
+    "    \"\"\" Compute co-occurrence matrix for the given corpus and window_size (default of 4).\n",
+    "    \n",
+    "        Note: Each word in a document should be at the center of a window. Words near edges will have a smaller\n",
+    "              number of co-occurring words.\n",
+    "              \n",
+    "              For example, if we take the document \"START All that glitters is not gold END\" with window size of 4,\n",
+    "              \"All\" will co-occur with \"START\", \"that\", \"glitters\", \"is\", and \"not\".\n",
+    "    \n",
+    "        Params:\n",
+    "            corpus (list of list of strings): corpus of documents\n",
+    "            window_size (int): size of context window\n",
+    "        Return:\n",
+    "            M (numpy matrix of shape (number of unique words in the corpus , number of unique words in the corpus)):\n",
+    "                Co-occurence matrix of word counts. \n",
+    "                The ordering of the words in the rows/columns should be the same as the ordering of the words given by the distinct_words function.\n",
+    "            word2Ind (dict): dictionary that maps word to index (i.e. row/column number) for matrix M.\n",
+    "    \"\"\"\n",
+    "    words, num_words = distinctWords(corpus)\n",
+    "    M = np.zeros(shape=(num_words, num_words))\n",
+    "    word2Ind = {word: i for i, word in enumerate(words)}\n",
+    "    #ind2Word = {i: word for word, i in enumerate(words)}\n",
+    "\n",
+    "    corpus = [doc.split() for doc in corpus]\n",
+    "\n",
+    "    for doc in corpus:\n",
+    "        for i, word in enumerate(doc):\n",
+    "            for j in range(max(i-window_size, 0), min(i+window_size+1, len(doc))):\n",
+    "                if i == j:\n",
+    "                    continue\n",
+    "                else:\n",
+    "                    M[word2Ind.get(word), word2Ind.get(doc[j])] += 1\n",
+    "    #for doc in corpus:\n",
+    "    #    print(len(doc))\n",
+    "    #    for i, word in enumerate(doc):\n",
+    "    #        print(i, word)\n",
+    "    #        for j in range(max(i-window_size, 0), min(i+window_size+1, len(doc))):\n",
+    "    #            if i == j:\n",
+    "    #                continue\n",
+    "    #            else:\n",
+    "    #                try:\n",
+    "    #                    print('\\t\\t', j, doc[j])\n",
+    "    #                    M[i, word2Ind.get(doc[j])] += 1\n",
+    "    #                except:\n",
+    "    #                    M[i, word2Ind.get(doc[j])] += 1\n",
+    "#\n",
+    "                \n",
+    "\n",
+    "    ### SOLUTION BEGIN\n",
+    "    ### SOLUTION END\n",
+    "\n",
+    "    return M, word2Ind"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 180,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": "None\nNone\n"
+    },
+    {
+     "data": {
+      "text/plain": "dict_keys(['All', \"All's\", 'END', 'START', 'ends', 'glitters', 'gold', \"isn't\", 'that', 'well'])"
+     },
+     "execution_count": 180,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "M, word2Ind = computeCoOccurrenceMatrix(toy_corpus, 1)\n",
+    "print(word2Ind.get(1))\n",
+    "print(word2Ind.get(0))\n",
+    "#print(word2Ind['All'])\n",
+    "word2Ind.keys()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 181,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": "array([[0., 0., 0., 1., 0., 0., 0., 0., 1., 0.],\n       [0., 0., 0., 1., 0., 0., 0., 0., 0., 1.],\n       [0., 0., 0., 0., 0., 0., 1., 0., 0., 1.],\n       [1., 1., 0., 0., 0., 0., 0., 0., 0., 0.],\n       [0., 0., 0., 0., 0., 0., 0., 0., 1., 1.],\n       [0., 0., 0., 0., 0., 0., 0., 1., 1., 0.],\n       [0., 0., 1., 0., 0., 0., 0., 1., 0., 0.],\n       [0., 0., 0., 0., 0., 1., 1., 0., 0., 0.],\n       [1., 0., 0., 0., 1., 1., 0., 0., 0., 1.],\n       [0., 1., 1., 0., 1., 0., 0., 0., 1., 0.]])"
+     },
+     "execution_count": 181,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "M"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 65,
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": "{0: 'All',\n 1: \"All's\",\n 2: 'END',\n 3: 'START',\n 4: 'ends',\n 5: 'glitters',\n 6: 'gold',\n 7: \"isn't\",\n 8: 'that',\n 9: 'well'}"
+     },
+     "execution_count": 65,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "word2Ind"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "def reduceToKDim(M, k=2):\n",
+    "    \"\"\" Reduce a co-occurence count matrix of dimensionality (num_corpus_words, num_corpus_words)\n",
+    "        to a matrix of dimensionality (num_corpus_words, k) using the following SVD function from Scikit-Learn:\n",
+    "            - http://scikit-learn.org/stable/modules/generated/sklearn.decomposition.TruncatedSVD.html\n",
+    "    \n",
+    "        Params:\n",
+    "            M (numpy matrix of shape (number of unique words in the corpus , number of number of corpus words)): co-occurence matrix of word counts\n",
+    "            k (int): embedding size of each word after dimension reduction\n",
+    "        Return:\n",
+    "            M_reduced (numpy matrix of shape (number of corpus words, k)): matrix of k-dimensioal word embeddings.\n",
+    "                    In terms of the SVD from math class, this actually returns U * S\n",
+    "    \"\"\"\n",
+    "    np.random.seed(4355)\n",
+    "    n_iters = 10  # Use this parameter in your call to `TruncatedSVD`\n",
+    "    M_reduced = None\n",
+    "    print(\"Running Truncated SVD over %i words...\" % (M.shape[0]))\n",
+    "\n",
+    "    ### SOLUTION BEGIN\n",
+    "    svd = TruncatedSVD(n_components=)\n",
+    "    ### SOLUTION END\n",
+    "\n",
+    "    print(\"Done.\")\n",
+    "    return M_reduced"
+   ]
+  }
+ ]
+}

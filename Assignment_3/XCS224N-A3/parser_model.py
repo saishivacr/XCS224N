@@ -104,8 +104,7 @@ class ParserModel(nn.Module):
         ###     Embedding Layer: https://pytorch.org/docs/stable/nn.html#torch.nn.Embedding
         ###     View: https://pytorch.org/docs/stable/tensors.html#torch.Tensor.view
 
-        x = self.pretrained_embeddings(t)
-        x = x.view(-1, self.n_features*self.embed_size)
+        x = self.pretrained_embeddings(t).view(t.size()[0], self.n_features*self.embed_size)
 
         ### END YOUR CODE
 
@@ -124,8 +123,7 @@ class ParserModel(nn.Module):
                         model = ParserModel()
                         output = model(t) # this calls the forward function
                 - For more details checkout: https://pytorch.org/docs/stable/nn.html#torch.nn.Module.forward
-
-        @param t (Tensor): input tensor of tokens (batch_size, n_features)
+-        @param t (Tensor): input tensor of tokens (batch_size, n_features)
 
         @return logits (Tensor): tensor of predictions (output after applying the layers of the network)
                                  without applying softmax (batch_size, n_classes)
@@ -144,13 +142,12 @@ class ParserModel(nn.Module):
         ### Please see the following docs for support:
         ###     ReLU: https://pytorch.org/docs/stable/nn.functional.html?highlight=relu#torch.nn.functional.relu
 
-        x = self.embedding_lookup(t)
-        x = self.embed_to_hidden(x)
+        embs = self.embedding_lookup(t)
         # h = ReLU(xW + b_1)
-        h = nn.functional.relu(x)
-        h = self.dropout(h)
+        hidden = nn.functional.relu(self.embed_to_hidden(embs))
+        hidden_dropout = self.dropout(hidden)
         #l = hU + b2
-        logits = self.hidden_to_logits(h)
+        logits = self.hidden_to_logits(hidden_dropout)
 
         ### END YOUR CODE
         return logits

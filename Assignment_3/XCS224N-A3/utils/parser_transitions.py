@@ -22,7 +22,7 @@ class PartialParse(object):
         
         ### YOUR CODE HERE (3 Lines)
 
-        self.buffer = sentence.copy()
+        self.buffer = self.sentence.copy()
         self.stack = ['ROOT']
         self.dependencies = []
 
@@ -47,7 +47,7 @@ class PartialParse(object):
             self.stack.insert(0, "ROOT")
 
         if transition == "S":
-            self.stack.insert(len(self.stack), self.buffer.pop(0))
+            self.stack.append(self.buffer.pop(0))
 
         elif transition == "LA":
             self.dependencies.append((self.stack[-1], self.stack.pop(-2)))
@@ -105,12 +105,19 @@ def minibatch_parse(sentences, model, batch_size):
     partial_parses = [PartialParse(sentence) for sentence in sentences]
     unfinished_parses = partial_parses.copy()
 
-    while len(unfinished_parses) > 0:
-        transitions = model.predict(unfinished_parses[:batch_size])
-        for i in range(min(batch_size, len(unfinished_parses))):
-            unfinished_parses[i].parse_step(transitions[i])
-        unfinished_parses = [pp for pp in unfinished_parses if not (len(pp.stack) == 1 and 
-                            len(pp.buffer) == 0)]
+    #while len(unfinished_parses) > 0:
+    #    transitions = model.predict(unfinished_parses[:batch_size])
+    #    for i in range(min(batch_size, len(unfinished_parses))):
+    #        unfinished_parses[i].parse_step(transitions[i])
+    #    unfinished_parses = [pp for pp in unfinished_parses if not (len(pp.stack) == 1 and 
+    #                        len(pp.buffer) == 0)]
+    while unfinished_parses:
+        minibatch = unfinished_parses[:batch_size]
+        transitions = model.predict(minibatch)
+        for parse, prediction in zip(minibatch, transitions):
+            parse.parse_step(prediction)
+            if len(parse.buffer) == 0 and len(parse.stack) == 1:
+                unfinished_parses.remove(parse)
 
     dependencies = [pp.dependencies for pp in partial_parses]
 

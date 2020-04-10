@@ -31,6 +31,7 @@ def train(parser, train_data, dev_data, output_path, batch_size=1024, n_epochs=1
     optimizer = optim.Adam(
         parser.model.parameters(),
         lr=lr,
+        weight_decay=1e-8
     )
     loss_func = nn.CrossEntropyLoss()
 

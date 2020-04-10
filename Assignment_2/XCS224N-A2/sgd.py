@@ -78,7 +78,7 @@ def sgd(f, x0, step, iterations, postprocessing=None, useSaved=False,
     x = x0
 
     if not postprocessing:
-        postprocessing = lambda x: x
+        postprocessing = lambda x: x ### x
 
     exploss = None
 

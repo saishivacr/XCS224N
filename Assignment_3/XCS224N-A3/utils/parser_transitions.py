@@ -22,8 +22,8 @@ class PartialParse(object):
         
         ### YOUR CODE HERE (3 Lines)
 
-        self.buffer = self.sentence.copy()
-        self.stack = []
+        self.buffer = sentence.copy()
+        self.stack = ['ROOT']
         self.dependencies = []
 
         ### END YOUR CODE
@@ -54,6 +54,8 @@ class PartialParse(object):
         
         elif transition == "RA":
             self.dependencies.append((self.stack[-2], self.stack.pop(-1)))
+        else:
+            raise ValueError(f"{transition} is not a valid transition")
 
         ### END YOUR CODE
 
@@ -101,22 +103,17 @@ def minibatch_parse(sentences, model, batch_size):
     ###             is being accessed by `partial_parses` and may cause your code to crash.
 
     partial_parses = [PartialParse(sentence) for sentence in sentences]
-    unfinished_parses = partial_parses
+    unfinished_parses = partial_parses.copy()
 
     while len(unfinished_parses) > 0:
-        minibatch = unfinished_parses[:batch_size]
-        while len(minibatch) > 0:
-            transitions = model.predict(minibatch)
-            for i, steps in enumerate(transitions):
-                print("transitions for number", i, steps)
-                minibatch[i].parse([steps])
-                if minibatch[i].stack == 1 and minibatch[i].buffer == 0:
-                    minibatch.pop(minibatch[i])
-        unfinished_parses = unfinished_parses[batch_size:]
+        transitions = model.predict(unfinished_parses[:batch_size])
+        for i in range(min(batch_size, len(unfinished_parses))):
+            unfinished_parses[i].parse_step(transitions[i])
+        unfinished_parses = [pp for pp in unfinished_parses if not (len(pp.stack) == 1 and 
+                            len(pp.buffer) == 0)]
 
     dependencies = [pp.dependencies for pp in partial_parses]
 
-    print(dependencies)
     ### END YOUR CODE
 
     return dependencies

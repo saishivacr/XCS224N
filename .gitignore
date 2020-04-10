@@ -1,6 +1,7 @@
 .vscode/
 *.gz
-*.zip
 *.csv
 __pycache__
 /*/.git
+Assignment_3/XCS224N-A3/data/
+assignment*.zip

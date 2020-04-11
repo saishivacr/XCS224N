@@ -43,8 +43,6 @@ class PartialParse(object):
         ###         1. Shift
         ###         2. Left Arc
         ###         3. Right Arc
-        if len(self.stack) and not self.stack[0] == 'ROOT':
-            self.stack.insert(0, "ROOT")
 
         if transition == "S":
             self.stack.append(self.buffer.pop(0))
@@ -111,7 +109,7 @@ def minibatch_parse(sentences, model, batch_size):
     #        unfinished_parses[i].parse_step(transitions[i])
     #    unfinished_parses = [pp for pp in unfinished_parses if not (len(pp.stack) == 1 and 
     #                        len(pp.buffer) == 0)]
-    while unfinished_parses:
+    while unfinished_parses: 
         minibatch = unfinished_parses[:batch_size]
         transitions = model.predict(minibatch)
         for parse, prediction in zip(minibatch, transitions):

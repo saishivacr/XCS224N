@@ -23,7 +23,7 @@ class ParserModel(nn.Module):
     """
 
     def __init__(self, embeddings, n_features=36,
-                 hidden_size=200, n_classes=3, dropout_prob=0.5):
+                 hidden_size=300, n_classes=3, dropout_prob=0.5): # hidden_size default = 200
         """ Initialize the parser model.
 
         @param embeddings (Tensor): word embeddings (num_words, embedding_size)

@@ -15,7 +15,15 @@ from utils.parser_utils import minibatches, load_and_preprocess_data, AverageMet
 # -----------------
 # Primary Functions
 # -----------------
-def train(parser, train_data, dev_data, output_path, batch_size=1024, n_epochs=10, lr=0.0005):
+def train(parser,
+          train_data,
+          dev_data,
+          output_path,
+          batch_size=1024,
+          n_epochs=10,
+          lr=0.0005,
+          amsgrad=True
+          ): # default: amsgrad = False
     """ Train the neural dependency parser.
 
     @param parser (Parser): Neural Dependency Parser
@@ -104,8 +112,8 @@ def train_for_epoch(parser, train_data, dev_data, optimizer, loss_func, batch_si
 
 if __name__ == "__main__":
     # Note: Set debug to False, when training on entire corpus
-    debug = True
-    # debug = False
+    # debug = True
+    debug = False
 
     assert (torch.__version__ >= "1.0.0"), "Please install torch version 1.0.0 or above"
 

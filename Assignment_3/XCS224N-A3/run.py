@@ -19,10 +19,11 @@ def train(parser,
           train_data,
           dev_data,
           output_path,
-          batch_size=1024,
-          n_epochs=10,
+          batch_size=1024, # try 2048?
+          n_epochs=20, # default: n_epochs = 10
           lr=0.0005,
-          amsgrad=True
+          amsgrad=True,
+          weight_decay=1e-8
           ): # default: amsgrad = False
     """ Train the neural dependency parser.
 
@@ -39,7 +40,7 @@ def train(parser,
     optimizer = optim.Adam(
         parser.model.parameters(),
         lr=lr,
-        weight_decay=1e-8
+        weight_decay=weight_decay
     )
     loss_func = nn.CrossEntropyLoss()
 
@@ -136,7 +137,16 @@ if __name__ == "__main__":
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
-    train(parser, train_data, dev_data, output_path, batch_size=1024, n_epochs=10, lr=0.0005)
+    # train(parser, train_data, dev_data, output_path, batch_size=1024, n_epochs=10, lr=0.0005)
+    train(parser,
+          train_data,
+          dev_data,
+          output_path, 
+          batch_size=2048,
+          n_epochs=20,
+          lr=0.0005,
+          amsgrad=True,
+          weight_decay=1e-8)
 
     if not debug:
         print(80 * "=")

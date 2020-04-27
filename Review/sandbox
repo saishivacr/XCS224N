@@ -1,0 +1,82 @@
+{
+ "nbformat": 4,
+ "nbformat_minor": 2,
+ "metadata": {
+  "language_info": {
+   "name": "python",
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   }
+  },
+  "orig_nbformat": 2,
+  "file_extension": ".py",
+  "mimetype": "text/x-python",
+  "name": "python",
+  "npconvert_exporter": "python",
+  "pygments_lexer": "ipython3",
+  "version": 3
+ },
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "d1 = \"all that glitters is not gold\"\n",
+    "d2 = \"all is well that ends well\""
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "from collections import Counter\n",
+    "\n",
+    "words = d1.split() + d2.split()\n",
+    "counts = Counter(words)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": "['all', 'that', 'glitters', 'is', 'not', 'gold', 'all', 'is', 'well', 'that', 'ends', 'well']\n"
+    }
+   ],
+   "source": [
+    "print(words)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {},
+   "source": [
+    "      STARTall     that    glitters    is  not     gold    well  ends\n",
+    "S 0     2    0      0        0   0     0      0     0    0TART\n",
+    "al2l    0    1      0        1   0     0      0     0    0    \n",
+    "  0     1    0      1        0   0     0      1     1    0that\n",
+    "glit 0  0    1      0        1   0     0      0     0    0ter    0     1    0      1        0   1     0      1     0    0s\n",
+    "is    0     0    0      0        1   0     1      0     0    0   \n",
+    "not\n",
+    "  0     0    0      0        0   1     0      0     0    1gold\n",
+    "  0     0    1      0        1   0     0      0     1    1well\n",
+    "  0     0    1      0        0   0     0      1     0    0endsS  0     0    0      0        0   0     1      1     0    0"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  }
+ ]
+}

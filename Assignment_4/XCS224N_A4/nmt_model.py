@@ -82,15 +82,14 @@ class NMT(nn.Module):
 
 
         self.decoder = nn.LSTMCell(
-            input_size = self.embed_size,
+            input_size = self.embed_size+self.hidden_size,
             hidden_size = self.hidden_size,
-        
+            bias = True)
         ### decoder outputs: output, (h_n, c_n)
         ### output shape is (seq_len, batch, num_directions*hidden_size)
         ### h_n shape is (num_layers * num_directions, batch, hidden_size)
         ### c_n shape is (num_layers * num_directions, batch, hidden_size)
         
-            bias = True)
 
         self.h_projection = nn.Linear(
             in_features = 2*self.hidden_size,
@@ -367,6 +366,11 @@ class NMT(nn.Module):
         ###         https://pytorch.org/docs/stable/torch.html#torch.unsqueeze
         ###     Tensor Squeeze:
         ###         https://pytorch.org/docs/stable/torch.html#torch.squeeze
+
+        dec_state = self.decoder(Ybar_t, dec_state)
+        dec_hidden, dec_cell = dec_state
+
+        e_t = torch.squeeze(torch.bmm(enc_hiddens_proj, dec_hidden.unsqueeze(dim=2)), dim=2)
 
         ### END YOUR CODE
 

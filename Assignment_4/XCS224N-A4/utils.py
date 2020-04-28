@@ -20,7 +20,6 @@ def pad_sents(sents, pad_token):
 
     ### YOUR CODE HERE (~6 Lines)
     longest_sent = max(map(len, sents))
-    #sents_padded = [sent.ljust(length, pad_token) for sent in sents]
 
     def pad_one(sent):
         sent.extend([pad_token]*(longest_sent-len(sent)))

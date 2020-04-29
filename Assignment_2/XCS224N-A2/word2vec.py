@@ -175,7 +175,7 @@ def skipgram(currentCenterWord, windowSize, outsideWords, word2Ind,
     # Iterate over outside words
     for outsideWord in outsideWords:
         outsideWordIdx = word2Ind[outsideWord]
-        lossCurrent, grad_c, grad_o = naiveSoftmaxLossAndGradient(currentCenterWordVec,
+        lossCurrent, grad_c, grad_o = word2vecLossAndGradient(currentCenterWordVec,
                                         outsideWordIdx,
                                         outsideVectors,
                                         dataset)

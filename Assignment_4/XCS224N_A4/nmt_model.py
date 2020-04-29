@@ -15,6 +15,8 @@ from torch.nn.utils.rnn import (
     pad_packed_sequence
 )
 
+from torch import unsqueeze
+
 Hypothesis = namedtuple('Hypothesis', ['value', 'score'])
 
 
@@ -406,6 +408,14 @@ class NMT(nn.Module):
         ###     Tanh:
         ###         https://pytorch.org/docs/stable/torch.html#torch.tanh
 
+        alpha_t = F.softmax(e_t)
+
+        # (b, 1, src_len) * (b, src_len, 2h) -> (b, 1, 2h)
+        a_t = torch.squeeze(torch.bmm(torch.unsqueeze(alpha_t, dim=1), enc_hiddens), dim=1)
+        U_t = torch.cat((dec_hidden, a_t), 1)
+        V_t = self.combined_output_projection(U_t)
+        O_t = self.dropout(torch.tanh(V_t))
+        
         ### END YOUR CODE
 
         combined_output = O_t

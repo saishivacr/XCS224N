@@ -36,7 +36,7 @@ def pad_sents_char(sents, char_pad_token):
 
     sents_padded = []
 
-    max_sent_length = max([len(s) for s in sents])
+    max_sent_length = max(map(lambda s: len(s), sents))
     pad_word = [char_pad_token]*max_word_length
 
     # Normalize sentence lengths

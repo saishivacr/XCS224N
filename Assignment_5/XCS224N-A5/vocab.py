@@ -155,27 +155,32 @@ class VocabEntry(object):
         return [self.id2word[w_id] for w_id in word_ids]
 
     def to_input_tensor_char(self, sents: List[List[str]], device: torch.device) -> torch.Tensor:
-        """ Convert list of sentences (words) into tensor with necessary padding for 
-        shorter sentences.
+        """ Converts a list of sentences (words) 
+        into tensor with necessary padding for shorter sentences.
 
         @param sents (List[List[str]]): list of sentences (words)
+        
         @param device: device on which to load the tensor, i.e. CPU or GPU
 
-        @returns sents_var: tensor of (max_sentence_length, batch_size, max_word_length)
+        @returns sents_var: tensor with dimensions
+            (max_sentence_length, batch_size, max_word_length)
         """
-        ### YOUR CODE HERE for part 1c
-        ### TODO: 
-        ###     Connect `words2charindices()` and `pad_sents_char()` which you've defined in 
-        ###     previous parts
-        
+        # Part 1c
+        # TODO: 
+        # Connects `words2charindices()` and `pad_sents_char()`
 
-        ### END YOUR CODE
+        word_ids = self.words2charindices(sents)
+        sents_padded = pad_sents_char(word_ids, self.char2id['<pad>'])  # dims=(batch_size, max_sentence_length, max_word_length)
+
+        sents_var = torch.tensor(sents_padded, dtype=torch.long, device=device).permute(1, 0, 2)
+        return sents_var
 
     def to_input_tensor(self, sents: List[List[str]], device: torch.device) -> torch.Tensor:
-        """ Convert list of sentences (words) into tensor with necessary padding for 
-        shorter sentences.
+        """ Convert list of sentences (words) into tensor
+        with necessary padding for shorter sentences.
 
         @param sents (List[List[str]]): list of sentences (words)
+        
         @param device: device on which to load the tesnor, i.e. CPU or GPU
 
         @returns sents_var: tensor of (max_sentence_length, batch_size)

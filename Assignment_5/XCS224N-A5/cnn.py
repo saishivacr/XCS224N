@@ -59,7 +59,10 @@ class CNN(nn.Module):
         @return x_conv_out: torch.Tensor with shape ()
         """
         x_conv = self.conv_layer(x_reshaped)
-        #x_conv_out = torch.max(F.relu(x_conv), dim=2)
-        x_conv_out = self.max_pool(F.relu(x_conv))
+        
+        # x_conv_out = torch.max(F.relu(x_conv), dim=2)[0]
+
+        x_conv_out = self.max_pool(F.relu(x_conv)).squeeze(dim=2)
+
         return x_conv_out
 

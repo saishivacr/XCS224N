@@ -10,12 +10,12 @@ from typing import List, Tuple
 
 
 class Highway(nn.Module):
-    def __init__(self, word_embed_size: int, dropout_rate: float = 0.2):
+    def __init__(self, word_embed_size: torch.long, dropout_rate: float = 0.2):
         """
         Class that implements a highway network
         
-        @param word_embed_size: shape of the input tensor
-            (the output of the convolutional network)
+        @param word_embed_size: number of features of the input
+            tensor (the output of the convolutional network)
         @param dropout_rate: percentage of dropout to use
             on the output of the highway
 
@@ -57,6 +57,6 @@ class Highway(nn.Module):
         x_gate = torch.sigmoid(self.gate_layer(x_conv))
 
         # Hadamard product with overloaded `*`
-        x_highway = x_gate * x_proj + (1-x_gate) * x_conv
+        x_highway = x_gate * x_proj + (1 - x_gate) * x_conv
         
         return self.dropout_layer(x_highway)

@@ -1,8 +1,9 @@
 """
 CS224N 2018-19: Homework 5
-test_highway.py: sanity checks for assignment 5 highway module
+test_mods.py: sanity checks for assignment 5 modules
 Usage:
-    test_highway.py 1d
+    test_mods.py 1d
+    test_mods.py 1e
 """
 
 import json

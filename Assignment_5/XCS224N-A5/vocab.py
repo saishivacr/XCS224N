@@ -21,6 +21,7 @@ import torch
 from typing import List
 from utils import read_corpus, pad_sents, pad_sents_char
 
+
 class VocabEntry(object):
     """ Vocabulary Entry, i.e. structure containing either
     src or tgt language terms.

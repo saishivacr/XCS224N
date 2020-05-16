@@ -4,6 +4,7 @@ test_mods.py: sanity checks for assignment 5 modules
 Usage:
     test_mods.py 1d
     test_mods.py 1e
+    test_mods.py 1f
 """
 
 import json
@@ -125,11 +126,60 @@ def test_1d():
     print("Sanity checks passed for Question 1d: Highway!")
     print("-"*80)
 
+def test_1e():
+
+    import torch
+    import json
+    from nmt_model import NMT
+    from vocab import Vocab
+
+    sentence_length = 10
+    max_word_length = 21
+    batch_size = 5
+    embed_size = 3
+
+    vocab = Vocab.load('./sanity_check_en_es_data/vocab_sanity_check.json')
+
+    print('-'*80)
+    print('Running Sanity Checks for Question 1e:  Conv1d')
+    def test_model(sentence_length, batch_size, max_word_length, embed_size):
+        model = NMT(embed_size=embed_size, hidden_size=3, dropout_rate=0.2, vocab=vocab)
+        x = torch.zeros(sentence_length, batch_size, max_word_length,   dtype=torch.long)
+        ME_source = model.model_embeddings_source
+        output = ME_source.forward(x)
+        output_expected_size = [sentence_length, batch_size, embed_size]
+
+        assert list(output.size()) == output_expected_size, f'Output shape should be:\n{output_expected_size}, but is:\n{list(output.size())}'
+
+    params = (10, 5, 21, 3)
+    test_model(*params)
+
+    #print('Testing batch size 1')
+    params = (10, 1, 21, 3)
+    test_model(*params)
+
+    #print('Testing max word length = sentence length')
+    params = (21, 5, 21, 3)
+    test_model(*params)
+
+    #print('Testing max word length = 20')
+    #params = (10, 5, 20, 3)
+    #test_model(*params)
+    # print('Testing embed_size=1')
+    
+    params = (10, 5, 21, 1)
+    test_model(*params)
+    print('-'*80)
+    print('Sanity Checks Passed for Question 1e: Conv1d!')
+
+
 def main():
     args = docopt(__doc__)
     if args['1d']:
 
         test_1d()
+    elif args['1e']:
+        test_1e()
     else:
         raise RuntimeError("Invalid argument for testing")
 

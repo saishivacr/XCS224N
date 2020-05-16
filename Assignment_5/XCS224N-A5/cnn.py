@@ -62,9 +62,11 @@ class CNN(nn.Module):
         """
         x_conv = self.conv_layer(x_reshaped)
         
+        # Max pool
+        # Method 1:
         # x_conv_out = torch.max(F.relu(x_conv), dim=2)[0]
+        # return x_conv_out
 
+        # Method 2:
         x_conv_out = self.max_pool(F.relu(x_conv))
-
         return torch.squeeze(x_conv_out, dim=2)
-

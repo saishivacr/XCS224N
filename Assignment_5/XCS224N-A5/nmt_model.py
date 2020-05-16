@@ -5,6 +5,7 @@ from collections import namedtuple
 import sys
 from typing import List, Tuple, Dict, Set, Union
 import torch
+from torch import device
 import torch.nn as nn
 import torch.nn.utils
 import torch.nn.functional as F
@@ -52,9 +53,9 @@ class NMT(nn.Module):
         self.dropout = nn.Dropout(self.dropout_rate)
 
         if not no_char_decoder:
-           self.charDecoder = CharDecoder(hidden_size, target_vocab=vocab.tgt) 
+            self.charDecoder = CharDecoder(hidden_size, target_vocab=vocab.tgt)
         else:
-           self.charDecoder = None
+            self.charDecoder = None
 
     def forward(self, source: List[List[str]], target: List[List[str]]) -> torch.Tensor:
         """ Take a mini-batch of source and target sentences, compute the log-likelihood of
@@ -72,37 +73,48 @@ class NMT(nn.Module):
 
         # Convert list of lists into tensors
 
-        ## A4 code
+        # A4 code
         # source_padded = self.vocab.src.to_input_tensor(source, device=self.device)   # Tensor: (src_len, b)
         # target_padded = self.vocab.tgt.to_input_tensor(target, device=self.device)   # Tensor: (tgt_len, b)
  
         # enc_hiddens, dec_init_state = self.encode(source_padded, source_lengths)
         # enc_masks = self.generate_sent_masks(enc_hiddens, source_lengths)
         # combined_outputs = self.decode(enc_hiddens, enc_masks, dec_init_state, target_padded)
-        ## End A4 code
+        # End A4 code
         
-        ### YOUR CODE HERE for part 1g
-        ### TODO: 
-        ###     Modify the code lines above as needed to fetch the character-level tensor 
-        ###     to feed into encode() and decode(). You should:
-        ###     - Keep `target_padded` from A4 code above for predictions
-        ###     - Add `source_padded_chars` for character level padded encodings for source
-        ###     - Add `target_padded_chars` for character level padded encodings for target
-        ###     - Modify calls to encode() and decode() to use the character level encodings
+        # YOUR CODE HERE for part 1g
+        # TODO: 
+        #     Modify the code lines above as needed to fetch the character-level tensor 
+        #     to feed into encode() and decode(). You should:
+        #     - Keep `target_padded` from A4 code above for predictions
+        #     - Add `source_padded_chars` for character level padded encodings for source
+        #     - Add `target_padded_chars` for character level padded encodings for target
+        #     - Modify calls to encode() and decode() to use the character level encodings
 
- 
-        ### END YOUR CODE
+        target_padded = self.vocab.tgt.to_input_tensor(target,
+                                                       device=self.device)
+        target_padded_chars = self.vocab.tgt.to_input_tensor_char(target, device=self.device)
+        source_padded_chars = self.vocab.src.to_input_tensor_char(source, device=self.device)
+
+        enc_hiddens, dec_init_state = self.encode(source_padded_chars,
+                                                  source_lengths)
+        enc_masks = self.generate_sent_masks(enc_hiddens, source_lengths)
+        
+        combined_outputs = self.decode(enc_hiddens,
+                                       enc_masks,
+                                       dec_init_state,
+                                       target_padded_chars)
+
+        # End new code for char model
 
         P = F.log_softmax(self.target_vocab_projection(combined_outputs), dim=-1)
 
-        # Zero out, probabilities for which we have nothing in the target text
+        # Zero out probabilities for which we have nothing in the target text
         target_masks = (target_padded != self.vocab.tgt['<pad>']).float()
 
         # Compute log probability of generating true target words
         target_gold_words_log_prob = torch.gather(P, index=target_padded[1:].unsqueeze(-1), dim=-1).squeeze(-1) * target_masks[1:]
         scores = target_gold_words_log_prob.sum() # mhahn2 Small modification from A4 code.
-
-
 
         if self.charDecoder is not None:
             max_word_len = target_padded_chars.shape[-1]
@@ -111,13 +123,12 @@ class NMT(nn.Module):
             target_chars = target_padded_chars[1:].view(-1, max_word_len)
             target_outputs = combined_outputs.view(-1, 256)
     
-            target_chars_oov = target_chars #torch.index_select(target_chars, dim=0, index=oovIndices)
-            rnn_states_oov = target_outputs #torch.index_select(target_outputs, dim=0, index=oovIndices)
+            target_chars_oov = target_chars  #torch.index_select(target_chars, dim=0, index=oovIndices)
+            rnn_states_oov = target_outputs  #torch.index_select(target_outputs, dim=0, index=oovIndices)
             oovs_losses = self.charDecoder.train_forward(target_chars_oov.t(), (rnn_states_oov.unsqueeze(0), rnn_states_oov.unsqueeze(0)))
             scores = scores - oovs_losses
     
         return scores
-
 
     def encode(self, source_padded: torch.Tensor, source_lengths: List[int]) -> Tuple[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]:
         """ Apply the encoder to source sentences to obtain encoder hidden states.
@@ -145,9 +156,9 @@ class NMT(nn.Module):
 
         return enc_hiddens, dec_init_state
 
-
     def decode(self, enc_hiddens: torch.Tensor, enc_masks: torch.Tensor,
-                dec_init_state: Tuple[torch.Tensor, torch.Tensor], target_padded: torch.Tensor) -> torch.Tensor:
+               dec_init_state: Tuple[torch.Tensor, torch.Tensor],
+               target_padded: torch.Tensor) -> torch.Tensor:
         """Compute combined output vectors for a batch.
         @param enc_hiddens (Tensor): Hidden states (b, src_len, h*2), where
                                      b = batch size, src_len = maximum source sentence length, h = hidden size.
@@ -186,12 +197,11 @@ class NMT(nn.Module):
 
         return combined_outputs
 
-
     def step(self, Ybar_t: torch.Tensor,
-            dec_state: Tuple[torch.Tensor, torch.Tensor],
-            enc_hiddens: torch.Tensor,
-            enc_hiddens_proj: torch.Tensor,
-            enc_masks: torch.Tensor) -> Tuple[Tuple, torch.Tensor, torch.Tensor]:
+             dec_state: Tuple[torch.Tensor, torch.Tensor],
+             enc_hiddens: torch.Tensor,
+             enc_hiddens_proj: torch.Tensor,
+             enc_masks: torch.Tensor) -> Tuple[Tuple, torch.Tensor, torch.Tensor]:
         """ Compute one forward step of the LSTM decoder, including the attention computation.
         @param Ybar_t (Tensor): Concatenated Tensor of [Y_t o_prev], with shape (b, e + h). The input for the decoder,
                                 where b = batch size, e = embedding size, h = hidden size.

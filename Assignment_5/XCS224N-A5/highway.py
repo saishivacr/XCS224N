@@ -10,7 +10,7 @@ from typing import List, Tuple
 
 
 class Highway(nn.Module):
-    def __init__(self, word_embed_size: torch.long, dropout_rate: float = 0.2):
+    def __init__(self, word_embed_size: int, dropout_rate: float = 0.3):
         """
         Class that implements a highway network
         

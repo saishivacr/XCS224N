@@ -10,7 +10,9 @@ from typing import List, Tuple
 
 class CNN(nn.Module):
     """
-    A 1-dimensional convolutional layer.
+    A 1-dimensional convolutional layer. Convolves over the last
+      dimension of the tensor (for embeddings, reshape the input
+      so that the max_word_length is the last dimension).
 
     Hyperparameters:
             in_channels (int): Equal to the size of character embeddings  
@@ -54,15 +56,15 @@ class CNN(nn.Module):
             b: bias vector (word_embed_size)
             
         @param x_reshaped: padded torch.Tensor
-            with shape (batch_size, char_embed_size, max_word_length)
+            with shape (sent_len*batch_size, char_embed_size, max_word_length)
         
-        @return x_conv_out: torch.Tensor with shape ()
+        @return x_conv_out: torch.Tensor with shape (sent_len, batch_size, word_embed_size)
         """
         x_conv = self.conv_layer(x_reshaped)
         
         # x_conv_out = torch.max(F.relu(x_conv), dim=2)[0]
 
-        x_conv_out = self.max_pool(F.relu(x_conv)).squeeze(dim=2)
+        x_conv_out = self.max_pool(F.relu(x_conv))
 
-        return x_conv_out
+        return torch.squeeze(x_conv_out, dim=2)
 

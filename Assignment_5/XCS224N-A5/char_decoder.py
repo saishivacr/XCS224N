@@ -3,64 +3,127 @@
 
 import torch
 import torch.nn as nn
+from vocab import VocabEntry
+
 
 class CharDecoder(nn.Module):
-    def __init__(self, hidden_size, char_embedding_size=50, target_vocab=None):
+    def __init__(self, hidden_size: int,
+                 char_embedding_size: int = 50,
+                 target_vocab: VocabEntry = None):
         """ Init Character Decoder.
 
         @param hidden_size (int): Hidden size of the decoder LSTM
-        @param char_embedding_size (int): dimensionality of character embeddings
-        @param target_vocab (VocabEntry): vocabulary for the target language. See vocab.py for documentation.
+        @param char_embedding_size (int): dimensionality of character
+            embeddings
+        @param target_vocab (VocabEntry): vocabulary for the target language.
+            See vocab.py for documentation.
         """
-        ### YOUR CODE HERE for part 2a
-        ### TODO - Initialize as an nn.Module.
-        ###      - Initialize the following variables:
-        ###        self.charDecoder: LSTM. Please use nn.LSTM() to construct this.
-        ###        self.char_output_projection: Linear layer, called W_{dec} and b_{dec} in the PDF
-        ###        self.decoderCharEmb: Embedding matrix of character embeddings
-        ###        self.target_vocab: vocabulary for the target language
-        ###
-        ### Hint: - Use target_vocab.char2id to access the character vocabulary for the target language.
-        ###       - Set the padding_idx argument of the embedding matrix.
-        ###       - Create a new Embedding layer. Do not reuse embeddings created in Part 1 of this assignment.
+        # YOUR CODE HERE for part 2a
+        # TODO - Initialize as an nn.Module.
+        #      - Initialize the following variables:
+        #        self.charDecoder: LSTM. Please use nn.LSTM() to construct this.
+        #        self.char_output_projection: Linear layer, called W_{dec} and b_{dec} in the PDF
+        #        self.decoderCharEmb: Embedding matrix of character embeddings
+        #        self.target_vocab: vocabulary for the target language
+        #
+        # Hint: - Use target_vocab.char2id to access the character vocabulary for the target language.
+        #       - Set the padding_idx argument of the embedding matrix.
+        #       - Create a new Embedding layer. Do not reuse embeddings created in Part 1 of this assignment.
         
+        super(CharDecoder, self).__init__()
+        
+        self.target_vocab = target_vocab
+        self.charDecoder = nn.LSTM(input_size=char_embedding_size,
+                                   hidden_size=hidden_size)
+        self.char_output_projection = nn.Linear(in_features=hidden_size,
+                                                out_features=len(target_vocab.char2id),  # Project onto all possible chars
+                                                bias=True)
+        self.decoderCharEmb = nn.Embedding(num_embeddings=len(target_vocab.char2id),
+                                           embedding_dim=char_embedding_size,
+                                           padding_idx=target_vocab.char2id['<pad>'])
+        self.padding_idx = target_vocab.char2id['<pad>']
 
-        ### END YOUR CODE
+        # END YOUR CODE
 
-
-    
     def forward(self, input, dec_hidden=None):
-        """ Forward pass of character decoder.
+        """ Single forward pass of character decoder.
 
         @param input: tensor of integers, shape (length, batch)
-        @param dec_hidden: internal state of the LSTM before reading the input characters. A tuple of two tensors of shape (1, batch, hidden_size)
+        @param dec_hidden: internal state of the LSTM before reading
+            the input characters.
+            A tuple of two tensors of shape (1, batch, hidden_size)
 
-        @returns scores: called s in the PDF, shape (length, batch, self.vocab_size)
-        @returns dec_hidden: internal state of the LSTM after reading the input characters. A tuple of two tensors of shape (1, batch, hidden_size)
+        @returns scores: called s in the PDF.
+            shape (length, batch, self.vocab_size)
+        @returns dec_hidden: internal state of the LSTM after reading
+            the input characters.
+            A tuple of two tensors of shape (1, batch, hidden_size)
         """
-        ### YOUR CODE HERE for part 2b
-        ### TODO - Implement the forward pass of the character decoder.
+        # YOUR CODE HERE for part 2b
+        # TODO - Implement the forward pass of the character decoder.
         
+        # shape is (len, batch, char_embedding_size)
+        char_embs = self.decoderCharEmb(input)
         
-        ### END YOUR CODE 
+        # `out` accesses all the hidden states of the sequence,
+        # `dec_hidden` accesses the most recent hidden state and allows
+        # you to backprop and feed the most recent timestep back
+        # into the model as input
+        # https://pytorch.org/tutorials/beginner/nlp/sequence_models_tutorial.html
 
+        # hidden shape is (len, batch, hidden_size)
+        out, dec_hidden = self.charDecoder(char_embs, dec_hidden)
+        
+        # score shape is (len, batch, len_vocab)
+        scores = self.char_output_projection(out)
+        return scores, dec_hidden
+
+        # END YOUR CODE
 
     def train_forward(self, char_sequence, dec_hidden=None):
         """ Forward computation during training.
 
-        @param char_sequence: tensor of integers, shape (length, batch). Note that "length" here and in forward() need not be the same.
-        @param dec_hidden: initial internal state of the LSTM, obtained from the output of the word-level decoder. A tuple of two tensors of shape (1, batch, hidden_size)
+        @param char_sequence: tensor of integers, shape (length, batch).
+            Note that "length" here and in forward() need not be the same.
+        @param dec_hidden: initial internal state of the LSTM, obtained
+            from the output of the word-level decoder.
+            A tuple of two tensors of shape (1, batch, hidden_size)
 
-        @returns The cross-entropy loss, computed as the *sum* of cross-entropy losses of all the words in the batch, for every character in the sequence.
+        @returns The cross-entropy loss, computed as the *sum* of
+            cross-entropy losses of all the words in the batch,
+            for every character in the sequence.
         """
-        ### YOUR CODE HERE for part 2c
-        ### TODO - Implement training forward pass.
-        ###
-        ### Hint: - Make sure padding characters do not contribute to the cross-entropy loss.
-        ###       - char_sequence corresponds to the sequence x_1 ... x_{n+1} from the handout (e.g., <START>,m,u,s,i,c,<END>).
+        # YOUR CODE HERE for part 2c
+        # TODO - Implement training forward pass.
+        #
+        # Hint: - Make sure padding characters do not contribute to the
+        #         cross-entropy loss.
+        #       - char_sequence corresponds to the sequence x_1 ... x_{n+1} 
+        #         from the handout (e.g., <START>,m,u,s,i,c,<END>).
+        
+        # Truncate <END> character
+        input_seq = char_sequence[:-1]
 
+        # Get the candidates for next characters
+        # shape is (len, batch, vocab_len)
+        score, dec_hidden = self.forward(input_seq, dec_hidden)
+        score = score.view(-1, score.shape[-1])
 
-        ### END YOUR CODE
+        # Get the target sequences against which to train
+        # Note: the decoder is trained to predict all words,
+        # not just <UNK> tokens.
+
+        # Truncate <START> chars
+        target = char_sequence[1:].contiguous().view(-1)
+
+        # Note: When computing cross-entropy, take the SUM,
+        # not the AVERAGE, and ignore `<pad>` characters.
+        # https://pytorch.org/docs/master/generated/torch.nn.CrossEntropyLoss.html
+
+        loss = nn.CrossEntropyLoss(ignore_index=self.padding_idx,
+                                   reduction='sum')
+
+        return loss(score, target)
 
     def decode_greedy(self, initialStates, device, max_length=21):
         """ Greedy decoding

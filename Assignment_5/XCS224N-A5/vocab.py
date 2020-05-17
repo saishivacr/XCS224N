@@ -135,9 +135,11 @@ class VocabEntry(object):
         #     and append
         #     with the `end_of_word` character.
  
-        return [[[self.char2id[c] for c
-                in self.start_of_word_char+w+self.end_of_word_char] for w in s]
-                for s in sents]
+        return [
+            [[self.start_of_word]+[self.char2id[c] for c in w] +
+            [self.end_of_word] for w in s]
+            for s in sents
+            ]
 
         # END YOUR CODE
 

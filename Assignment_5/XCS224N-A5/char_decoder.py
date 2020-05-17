@@ -85,6 +85,10 @@ class CharDecoder(nn.Module):
 
         @param char_sequence: tensor of integers, shape (length, batch).
             Note that "length" here and in forward() need not be the same.
+
+            char_sequence corresponds to the sequence x_1 ... x_{n+1} 
+            (e.g., <START>,m,u,s,i,c,<END>)
+        
         @param dec_hidden: initial internal state of the LSTM, obtained
             from the output of the word-level decoder.
             A tuple of two tensors of shape (1, batch, hidden_size)
@@ -92,14 +96,11 @@ class CharDecoder(nn.Module):
         @returns The cross-entropy loss, computed as the *sum* of
             cross-entropy losses of all the words in the batch,
             for every character in the sequence.
+            
+            Padding characters do not contribute to the
+            cross-entropy loss.
         """
-        # YOUR CODE HERE for part 2c
-        # TODO - Implement training forward pass.
-        #
-        # Hint: - Make sure padding characters do not contribute to the
-        #         cross-entropy loss.
-        #       - char_sequence corresponds to the sequence x_1 ... x_{n+1} 
-        #         from the handout (e.g., <START>,m,u,s,i,c,<END>).
+        # Implement training forward pass.
         
         # Truncate <END> character
         input_seq = char_sequence[:-1]
@@ -127,22 +128,48 @@ class CharDecoder(nn.Module):
 
     def decode_greedy(self, initialStates, device, max_length=21):
         """ Greedy decoding
-        @param initialStates: initial internal state of the LSTM, a tuple of two tensors of size (1, batch, hidden_size)
-        @param device: torch.device (indicates whether the model is on CPU or GPU)
+        @param initialStates: initial internal state of the LSTM, a tuple of
+            two tensors of size (1, batch, hidden_size)
+        @param device: torch.device (indicates whether the model is on CPU or
+            GPU)
         @param max_length: maximum length of words to decode
 
-        @returns decodedWords: a list (of length batch) of strings, each of which has length <= max_length.
-                              The decoded strings should NOT contain the start-of-word and end-of-word characters.
+        @returns decodedWords: a list (of length batch) of strings, each of
+            which has length <= max_length.
+            The decoded strings should NOT contain the start-of-word and
+            end-of-word characters.
         """
 
-        ### YOUR CODE HERE for part 2d
-        ### TODO - Implement greedy decoding.
-        ### Hints:
-        ###      - Use target_vocab.char2id and target_vocab.id2char to convert between integers and characters
-        ###      - Use torch.tensor(..., device=device) to turn a list of character indices into a tensor.
-        ###      - We use curly brackets as start-of-word and end-of-word characters. That is, use the character '{' for <START> and '}' for <END>.
-        ###        Their indices are self.target_vocab.start_of_word and self.target_vocab.end_of_word, respectively.
+        # YOUR CODE HERE for part 2d
+        # TODO - Implement greedy decoding.
+        # Hints:
+        #      - Use target_vocab.char2id and target_vocab.id2char to convert between integers and characters
+        #      - Use torch.tensor(..., device=device) to turn a list of character indices into a tensor.
+        #      - We use curly brackets as start-of-word and end-of-word characters. That is, use the character '{' for <START> and '}' for <END>.
+        #        Their indices are self.target_vocab.start_of_word and self.target_vocab.end_of_word, respectively.
+
+        start_index = self.target_vocab.start_of_word
+        end_index = self.target_vocab.end_of_word
+        dec_hidden = initialStates
+
+        batch_size = initialStates[0].shape[1]
         
+        start_char = [[start_index]] * batch_size
+        input = torch.tensor([start_index for _ in range(batch_size)], device=device).unsqueeze(0)
+        #input = torch.tensor(start_char, device=device).transpose(1, 0)
+
+        decoded = [["", False] for _ in range(batch_size)]
+
+        for _ in range(max_length):
+            score, dec_hidden = self.forward(input, dec_hidden)  # score shape: (len, batch_size, vocab_len)
+            input = score.argmax(dim=2)
         
-        ### END YOUR CODE
+            for seq_idx, char_idx in enumerate(input.detach().squeeze(0)):
+                if not decoded[seq_idx][1]:
+                    if char_idx != end_index:
+                        decoded[seq_idx][0] += self.target_vocab.id2char[char_idx.item()]
+                    else:
+                        decoded[seq_idx][1] = True
+        return [w[0] for w in decoded]
+        
 

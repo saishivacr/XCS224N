@@ -45,7 +45,7 @@ def pad_sents_char(sents, char_pad_token):
         sents))
 
     # Clip and pad word lengths
-    sents_padded = [list(map(lambda word: word[:max_word_length-1] + word[-1]
+    sents_padded = [list(map(lambda word: word[:max_word_length-1] + [word[-1]]
                              if len(word) > max_word_length
                              else word + [char_pad_token]*(max_word_length-len(word))
                              if len(word) < max_word_length

@@ -158,7 +158,7 @@ class VocabEntry(object):
         return [self.id2word[w_id] for w_id in word_ids]
 
     def to_input_tensor_char(self, sents: List[List[str]], device: torch.device) -> torch.Tensor:
-        """ Converts a list of sentences (words) 
+        """ Converts a list of sentences (words)
         into tensor with necessary padding for shorter sentences.
 
         @param sents (List[List[str]]): list of sentences (words)

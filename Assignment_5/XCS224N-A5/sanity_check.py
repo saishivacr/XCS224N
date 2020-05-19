@@ -27,6 +27,9 @@ from nmt_model import NMT
 from utils import pad_sents_char
 from vocab import Vocab, VocabEntry
 
+import logging
+logger = logging.getLogger(__name__)
+
 # ----------
 # CONSTANTS
 # ----------
@@ -97,6 +100,11 @@ def question_1b_sanity_check():
     assert padded_sentences == gold_padded_sentences, "Sentence padding is incorrect: it should be:\n {} but is:\n{}".format(
         gold_padded_sentences, padded_sentences)
 
+    #print(padded_sentences)
+    logger.info("Your padded sentences translated back to human-readable:")
+    logger.info([["".join([vocab.id2char[j] for j in i]) for i in sent] for sent in padded_sentences])
+    logger.info("Gold padded sentences translated back to human-readable:")
+    logger.info([["".join([vocab.id2char[j] for j in i]) for i in sent] for sent in gold_padded_sentences])
     print("Sanity Check Passed for Question 1b: Padding!")
     print("-" * 80)
 

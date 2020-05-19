@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+# 144: AdamW
 """
 Usage:
     run.py train --train-src=<file> --train-tgt=<file> --dev-src=<file> --dev-tgt=<file> --vocab=<file> [options]
@@ -128,6 +129,7 @@ def train(args: Dict):
 
     uniform_init = float(args['--uniform-init'])
     if np.abs(uniform_init) > 0.:
+        #print(f'model parameters: {list(model.parameters())}')
         print('uniformly initialize parameters [-%f, +%f]' % (uniform_init, uniform_init), file=sys.stderr)
         for p in model.parameters():
             p.data.uniform_(-uniform_init, uniform_init)
@@ -140,7 +142,9 @@ def train(args: Dict):
 
     model = model.to(device)
 
-    optimizer = torch.optim.Adam(model.parameters(), lr=float(args['--lr']))
+    optimizer = torch.optim.AdamW(model.parameters(),
+                                  lr=float(args['--lr']),
+                                  amsgrad=True)
 
     num_trial = 0
     train_iter = patience = cum_loss = report_loss = cum_tgt_words = report_tgt_words = 0

@@ -4,6 +4,7 @@ Usage:
 
 Options:
     -h --help                               show this screen.
+    --print-mods                            show modules
     --cuda                                  use GPU
     --train-src=<file>                      train source file [default: ./en_es_data/train.es]
     --train-tgt=<file>                      train target file [default: ./en_es_data/train.en]
@@ -175,6 +176,14 @@ def model_summary(args: Dict):
     #max_len = [max(len(c) for c in b) for b in zip(*rows)]
     #padding = "\t"*3
     #print(padding.join(s.ljust(l) for s, l in zip(rows, max_len)))
+
+    if args['--print-mods']:
+        print("Layers")
+        for m in model.modules():
+            print(F"Layer name: {type(m)}")
+            for p in m.parameters():
+                print(p)
+            
 
 def main():
     args = docopt(__doc__)

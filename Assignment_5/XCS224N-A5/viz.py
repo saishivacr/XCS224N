@@ -56,6 +56,11 @@ import torch
 import torch.nn.utils
 
 
+from torch.utils.tensorboard import SummaryWriter
+
+# default `log_dir` is "runs"
+writer = SummaryWriter('runs/nmt_a5')
+
 def evaluate_ppl(model, dev_data, batch_size=32):
     """ Evaluate perplexity on dev sentences
     @param model (NMT): NMT Model
@@ -191,7 +196,9 @@ def train(args: Dict):
                                                                                          cum_examples,
                                                                                          report_tgt_words / (time.time() - train_time),
                                                                                          time.time() - begin_time), file=sys.stderr)
-
+                
+                writer.add_scalar('traning loss', cum_loss/1000, epoch * len(train_data)+1)
+                
                 train_time = time.time()
                 report_loss = report_tgt_words = report_examples = 0.
 

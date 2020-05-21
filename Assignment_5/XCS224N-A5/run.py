@@ -57,7 +57,7 @@ import torch
 import torch.nn.utils
 import torch.nn as nn
 
-from init_weights import init_weights
+#from init_weights import init_weights
 
 def evaluate_ppl(model, dev_data, batch_size=32):
     """ Evaluate perplexity on dev sentences

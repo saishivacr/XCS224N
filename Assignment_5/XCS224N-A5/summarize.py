@@ -30,7 +30,7 @@ Options:
     --valid-niter=<int>                     perform validation after how many iterations [default: 2000]
     --dropout=<float>                       dropout [default: 0.3]
     --max-decoding-time-step=<int>          maximum number of decoding time steps [default: 70]
-    --no-char-decoder                       do not use the character decoder
+    --no-char-decoder                       do not use the character decoder [default: false]
 """
 import math
 import sys
@@ -183,7 +183,8 @@ def model_summary(args: Dict):
             print(F"Layer name: {type(m)}")
             for p in m.parameters():
                 print(p)
-            
+    print(f"Total Params:{total_params}")       
+    
 
 def main():
     args = docopt(__doc__)

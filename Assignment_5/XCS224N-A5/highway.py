@@ -59,7 +59,7 @@ class Highway(nn.Module):
 
         """
 
-        x_proj = F.leaky_relu(self.projection_layer(x_conv))
+        x_proj = F.relu(self.projection_layer(x_conv))
         x_gate = torch.sigmoid(self.gate_layer(x_conv))
 
         # Hadamard product with overloaded `*`

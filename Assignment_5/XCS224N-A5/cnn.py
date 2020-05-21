@@ -42,7 +42,7 @@ class CNN(nn.Module):
                                     out_channels=embed_size,
                                     kernel_size=kernel_size,
                                     bias=True)
-        nn.init.orthogonal_(self.conv_layer.weight, gain=nn.init.calculate_gain('leaky_relu', 0.01))
+        nn.init.orthogonal_(self.conv_layer.weight, gain=nn.init.calculate_gain('relu', 0.01))
 
         # self.max_pool = nn.MaxPool1d(
         #    kernel_size=max_word_length - kernel_size + 1)
@@ -69,7 +69,7 @@ class CNN(nn.Module):
 
         # Max pool
         # Method 1:
-        x_conv_out = torch.max(F.leaky_relu(x_conv), dim=2)[0]
+        x_conv_out = torch.max(F.relu(x_conv), dim=2)[0]
         return x_conv_out
 
         # Method 2:

@@ -2,8 +2,8 @@
 
 if [ "$1" = "train" ]; then
 	CUDA_VISIBLE_DEVICES=0 python run.py train --train-src=./en_es_data/train.es --train-tgt=./en_es_data/train.en \
-        --dev-src=./en_es_data/dev.es --dev-tgt=./en_es_data/dev.en --vocab=vocab.json --cuda --batch-size=2 --max-num-trial=30 \
-        --max-epoch=60	# batch-size 2 -> 64
+        --dev-src=./en_es_data/dev.es --dev-tgt=./en_es_data/dev.en --vocab=vocab.json --cuda --batch-size=64 --max-num-trial=30 \
+        --max-epoch=60	--hidden-size=512 --embed-size=512 # batch-size 2 -> 64
 
 elif [ "$1" = "test" ]; then
     mkdir -p outputs
@@ -66,6 +66,12 @@ elif [ "$1" = "my_test_local" ]; then
     touch experimental_outputs/test_outputs_mytest.txt
     python run.py decode model.bin ./en_es_data/test.es experimental_outputs/test_outputs_mytest.txt \
     --beam-size=10 --max-decoding-time-step=70
+
+elif [ "$1" = "futurama" ]; then
+    touch experimental_outputs/futurama_en_pred.txt
+    python run.py decode model.bin ./futurama.en experimental_outputs/futurama_en_pred.txt \
+    --beam-size=10 --max-decoding-time-step=70
+
 ###
 else
 	echo "Invalid Option Selected"

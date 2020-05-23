@@ -41,8 +41,8 @@ import time
 from typing import List, Dict
 
 import numpy as np
-import torch
-import torch.nn.utils
+import torch as torch
+import torch.nn.utils 
 from docopt import docopt
 from nltk.translate.bleu_score import corpus_bleu
 from nmt_model import Hypothesis, NMT

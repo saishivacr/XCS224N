@@ -2,5 +2,8 @@
 .vscode/
 __pycache__/
 */__pycache__/
+experimental_outputs/
+slack-notes.txt
+
 model.bin
 model.bin.optim

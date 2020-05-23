@@ -59,8 +59,9 @@ wordVectors = np.concatenate(
 visualizeWords = [
     "great", "cool", "brilliant", "wonderful", "well", "amazing",
     "worth", "sweet", "enjoyable", "boring", "bad", "dumb",
-    "annoying", "female", "male", "queen", "king", "man", "woman", "rain", "snow",
-    "hail", "coffee", "tea"]
+    "annoying", "female", "male", "queen", "king", "man", "woman", # "rain", "snow",
+    "beautiful", "ugly", "handsome", "cat", "dog", "doctor",
+    "nurse", "engineer", "scientist", "librarian", "programmer" ]
 
 # dimensionality reduction
 visualizeIdx = [tokens[word] for word in visualizeWords]
@@ -83,4 +84,4 @@ for i in range(len(visualizeWords)):
 plt.xlim((np.min(coord[:, 0]), np.max(coord[:, 0])))
 plt.ylim((np.min(coord[:, 1]), np.max(coord[:, 1])))
 
-plt.savefig('word_vectors.png')
+plt.savefig('word_vectors_2.png')

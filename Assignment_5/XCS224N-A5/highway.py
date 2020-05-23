@@ -3,6 +3,8 @@
 
 # Part 1d
 
+# 33,38,60: xavier initialization, leaky relu
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -30,9 +32,13 @@ class Highway(nn.Module):
         self.projection_layer = nn.Linear(in_features=word_embed_size,
                                           out_features=word_embed_size,
                                           bias=True)
+        nn.init.xavier_uniform_(self.projection_layer.weight, gain=1)
+
         self.gate_layer = nn.Linear(in_features=word_embed_size,
                                     out_features=word_embed_size,
                                     bias=True)
+        nn.init.xavier_uniform_(self.gate_layer.weight, gain=1)
+
         self.dropout_layer = nn.Dropout(p=self.dropout_rate)
 
     def forward(self, x_conv: torch.Tensor) -> torch.Tensor:

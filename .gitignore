@@ -10,3 +10,5 @@ assignment*.zip
 *.mp4
 Assignment_5/XCS224N-A5/en_es_data/*
 Assignment_5/.git*
+slack-notes.txt
+/*/*/experimental_outputs/
